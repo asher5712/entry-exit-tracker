@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views import View
@@ -16,21 +17,19 @@ class IndexView(View):
         return HttpResponseRedirect(reverse_lazy('record_list'))
 
 
-class RecordListView(LoginRequiredMixin, ListView):
+class RecordListView(PermissionRequiredMixin, ListView):
+    permission_required = 'entryexit.view_entryexitrecord'
+    permission_denied_message = "Permission Denied"
     template_name = 'entryexit/record_list.html'
     context_object_name = 'records'
     model = EntryExitRecord
     ordering = '-timestamp'
+    raise_exception = True
     paginate_by = 100
     extra_context = {
         'edit_form': EntryExitRecordForm(),
         'form': EntryExitRecordForm(),
     }
-
-    def get_queryset(self):
-        if self.request.user.is_superuser:
-            return EntryExitRecord.objects.all()
-        return EntryExitRecord.objects.filter(user=self.request.user.pk)
 
 
 class AddRecordView(LoginRequiredMixin, CreateView):
