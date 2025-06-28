@@ -1,6 +1,10 @@
 from django.urls import path
 
-from entryexit.views import AddRecordView, RecordListView, IndexView, EditRecordView, DeleteRecordView
+from entryexit.views import AddRecordView
+from entryexit.views import DeleteRecordView
+from entryexit.views import EditRecordView
+from entryexit.views import IndexView
+from entryexit.views import RecordListView
 
 urlpatterns = [
     path('', IndexView.as_view(), name='index'),
