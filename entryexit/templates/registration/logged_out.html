@@ -1,0 +1,9 @@
+{% extends "entryexit/base.html" %}
+{% block content %}
+    <div class="container mt-5" style="max-width: 400px;">
+        <div class="alert alert-info text-center">
+            <h4>You have been logged out.</h4>
+            <a href="{% url 'login' %}" class="btn btn-primary mt-3">Login Again</a>
+        </div>
+    </div>
+{% endblock %}
