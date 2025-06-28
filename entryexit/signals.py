@@ -7,7 +7,7 @@ from django.dispatch import receiver
 @receiver(post_save, sender=User)
 def add_entry_exit_permissions(instance, created, **kwargs):
     if created: instance.user_permissions.set(
-        Permission.objects.get(
+        Permission.objects.filter(
             content_type__app_label__iexact='entryexit',
             content_type__model__iexact='EntryExitRecord'
         )
