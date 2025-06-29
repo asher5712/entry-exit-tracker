@@ -14,7 +14,7 @@ class Profile(models.Model):
         max_length=32,
         choices=[(tz, tz) for tz in pytz.common_timezones],
         blank=True,  # allow empty at first
-        default="UTC"  # we'll fill it in on first request
+        default=""  # we'll fill it in on first request
     )
 
     class Meta:
