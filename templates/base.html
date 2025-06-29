@@ -11,7 +11,7 @@
         <a class="navbar-brand" href="{% url 'record_list' %}">Entry/Exit Tracker</a>
         <div>
             {% if user.is_authenticated %}
-                <span class="me-3">Logged in as {{ user.username }}</span>
+                <span class="me-3">Logged in as <b>{{ user.get_full_name|default:user.username }}</b></span>
                 <a href="{% url 'password_change' %}" class="btn btn-warning btn-sm me-2">Change Password</a>
                 <form method="post" action="{% url 'logout' %}" style="display: inline;">
                     {% csrf_token %}
