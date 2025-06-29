@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load tz %}
 {% load static %}
 {% load form_filters %}
 
@@ -71,7 +72,7 @@
                         <span class="badge bg-danger">Exit</span>
                     {% endif %}
                 </td>
-                <td>{{ record.timestamp|date:"Y-m-d H:i" }}</td>
+                <td>{{ record.timestamp|localtime|date:"Y-m-d H:i" }}</td>
                 <td>
                     <!-- Edit Button -->
                     <button class="btn btn-sm btn-outline-secondary"
@@ -150,7 +151,7 @@
                             <div class="modal-body">
                                 <p>Are you sure you want to delete this record
                                     ({{ record.get_record_type_display }}) at
-                                    {{ record.timestamp|date:"Y-m-d H:i" }}?</p>
+                                    {{ record.timestamp|localtime|date:"Y-m-d H:i" }}?</p>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel
