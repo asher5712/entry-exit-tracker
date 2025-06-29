@@ -3,6 +3,7 @@
 {% load form_filters %}
 
 {% block content %}
+    <!-- Bootstrap CSS & JS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -70,10 +71,10 @@
                                 <div class="modal-body">
                                     {% with form=edit_form %}
                                         {% for field in form %}
-                                            <div class="mb-3">
-                                                <label for="{{ field.id_for_label }}"
-                                                       class="form-label">{{ field.label }}</label>
-                                                {% if field.name == 'record_type' %}
+                                            {% if field.name == 'record_type' %}
+                                                <div class="mb-3">
+                                                    <label for="{{ field.id_for_label }}"
+                                                           class="form-label">{{ field.label }}</label>
                                                     <select name="record_type" id="{{ field.id_for_label }}"
                                                             class="form-select">
                                                         <option value="IN"
@@ -85,8 +86,8 @@
                                                             Exit
                                                         </option>
                                                     </select>
-                                                {% endif %}
-                                            </div>
+                                                </div>
+                                            {% endif %}
                                         {% endfor %}
                                     {% endwith %}
                                 </div>
@@ -113,8 +114,9 @@
                                             aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
-                                    <p>Are you sure you want to delete this record ({{ record.get_record_type_display }})
-                                        at {{ record.timestamp|date:"Y-m-d H:i" }}?</p>
+                                    <p>Are you sure you want to delete this record
+                                        ({{ record.get_record_type_display }}) at
+                                        {{ record.timestamp|date:"Y-m-d H:i" }}?</p>
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel
@@ -125,13 +127,55 @@
                         </div>
                     </div>
                 </div>
+
             {% empty %}
                 <tr>
-                    <td colspan="{% if request.user.is_superuser %}4{% else %}3{% endif %}" class="text-center text-muted">No records found.</td>
+                    <td colspan="{% if request.user.is_superuser %}4{% else %}3{% endif %}"
+                        class="text-center text-muted">
+                        No records found.
+                    </td>
                 </tr>
             {% endfor %}
             </tbody>
         </table>
+
+        {% if is_paginated %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Previous</span>
+                        </li>
+                    {% endif %}
+
+                    {% for num in paginator.page_range %}
+                        {% if num == page_obj.number %}
+                            <li class="page-item active" aria-current="page">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Next</span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
     </div>
 
     <!-- Add Modal -->

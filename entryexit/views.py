@@ -26,7 +26,7 @@ class RecordListView(PermissionRequiredMixin, ListView):
     context_object_name = 'records'
     model = EntryExitRecord
     ordering = '-timestamp'
-    paginate_by = 100
+    paginate_by = 20
     extra_context = {
         'edit_form': EntryExitRecordForm(),
         'form': EntryExitRecordForm(),
