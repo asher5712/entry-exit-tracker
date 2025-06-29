@@ -72,7 +72,10 @@
                         <span class="badge bg-danger">Exit</span>
                     {% endif %}
                 </td>
-                <td>{{ record.timestamp|localtime|date:"Y-m-d H:i" }}</td>
+                <td>
+                    {{ record.timestamp|localtime|date:"Y-m-d" }}
+                    {{ record.timestamp|localtime|time:"H:i T" }}
+                </td>
                 <td>
                     <!-- Edit Button -->
                     <button class="btn btn-sm btn-outline-secondary"
@@ -183,7 +186,8 @@
                     <li class="page-item">
                         <a
                                 class="page-link"
-                                href="?page={{ page_obj.previous_page_number }}{% if current_sort %}&sort={{ current_sort }}{% endif %}{% if current_direction %}&direction={{ current_direction }}{% endif %}"
+                                href="?page=
+                                        {{ page_obj.previous_page_number }}{% if current_sort %}&sort={{ current_sort }}{% endif %}{% if current_direction %}&direction={{ current_direction }}{% endif %}"
                         >
                             Previous
                         </a>
@@ -202,7 +206,8 @@
                         <li class="page-item">
                             <a
                                     class="page-link"
-                                    href="?page={{ num }}{% if current_sort %}&sort={{ current_sort }}{% endif %}{% if current_direction %}&direction={{ current_direction }}{% endif %}"
+                                    href="?page=
+                                            {{ num }}{% if current_sort %}&sort={{ current_sort }}{% endif %}{% if current_direction %}&direction={{ current_direction }}{% endif %}"
                             >
                                 {{ num }}
                             </a>
@@ -215,7 +220,8 @@
                     <li class="page-item">
                         <a
                                 class="page-link"
-                                href="?page={{ page_obj.next_page_number }}{% if current_sort %}&sort={{ current_sort }}{% endif %}{% if current_direction %}&direction={{ current_direction }}{% endif %}"
+                                href="?page=
+                                        {{ page_obj.next_page_number }}{% if current_sort %}&sort={{ current_sort }}{% endif %}{% if current_direction %}&direction={{ current_direction }}{% endif %}"
                         >
                             Next
                         </a>
