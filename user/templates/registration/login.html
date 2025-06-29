@@ -1,66 +1,66 @@
 {% extends "base.html" %}
 
 {% block content %}
-<style>
-  body {
-    background-color: #f0f2f5;
-  }
-</style>
+    <style>
+        body {
+            background-color: #f0f2f5;
+        }
+    </style>
 
-<div class="container d-flex align-items-center justify-content-center" style="min-height: 80vh;">
-  <div class="card shadow-sm border-0" style="max-width: 420px; width: 100%;">
-    <div class="card-body p-5">
-      <h3 class="card-title text-center mb-4">Sign In</h3>
+    <div class="container d-flex align-items-center justify-content-center" style="min-height: 80vh;">
+        <div class="card shadow-sm border-0" style="max-width: 420px; width: 100%;">
+            <div class="card-body p-5">
+                <h3 class="card-title text-center mb-4">Sign In</h3>
 
-      <form method="post" novalidate>
-        {% csrf_token %}
-        {% if form.non_field_errors %}
-          <div class="alert alert-danger">
-            {{ form.non_field_errors }}
-          </div>
-        {% endif %}
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
 
-        <div class="form-floating mb-3">
-          <input
-            type="email"
-            name="username"
-            class="form-control{% if form.username.errors %} is-invalid{% endif %}"
-            id="id_username"
-            placeholder="name@example.com"
-            value="{{ form.username.value|default_if_none:'' }}"
-            required
-          >
-          <label for="id_username">Email address</label>
-          {% for err in form.username.errors %}
-            <div class="invalid-feedback">{{ err }}</div>
-          {% endfor %}
+                    <div class="form-floating mb-3">
+                        <input
+                                type="email"
+                                name="username"
+                                class="form-control{% if form.username.errors %} is-invalid{% endif %}"
+                                id="id_username"
+                                placeholder="name@example.com"
+                                value="{{ form.username.value|default_if_none:'' }}"
+                                required
+                        >
+                        <label for="id_username">Email address</label>
+                        {% for err in form.username.errors %}
+                            <div class="invalid-feedback">{{ err }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="form-floating mb-4">
+                        <input
+                                type="password"
+                                name="password"
+                                class="form-control{% if form.password.errors %} is-invalid{% endif %}"
+                                id="id_password"
+                                placeholder="Password"
+                                required
+                        >
+                        <label for="id_password">Password</label>
+                        {% for err in form.password.errors %}
+                            <div class="invalid-feedback">{{ err }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2 mb-3">
+                        Sign In
+                    </button>
+
+                    <p class="text-center mb-0">
+                        Don't have an account?
+                        <a href="{% url 'signup' %}">Sign up</a> here
+                    </p>
+                </form>
+            </div>
         </div>
-
-        <div class="form-floating mb-4">
-          <input
-            type="password"
-            name="password"
-            class="form-control{% if form.password.errors %} is-invalid{% endif %}"
-            id="id_password"
-            placeholder="Password"
-            required
-          >
-          <label for="id_password">Password</label>
-          {% for err in form.password.errors %}
-            <div class="invalid-feedback">{{ err }}</div>
-          {% endfor %}
-        </div>
-
-        <button type="submit" class="btn btn-primary w-100 py-2 mb-3">
-          Sign In
-        </button>
-
-        <p class="text-center mb-0">
-          Don't have an account?
-          <a href="{% url 'signup' %}">Sign up</a> here
-        </p>
-      </form>
     </div>
-  </div>
-</div>
 {% endblock %}
