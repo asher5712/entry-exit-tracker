@@ -25,21 +25,48 @@ class RecordListView(PermissionRequiredMixin, ListView):
     template_name = 'entryexit/record_list.html'
     context_object_name = 'records'
     model = EntryExitRecord
-    ordering = '-timestamp'
     paginate_by = 8
+
+    # keep your forms around for the modals
     extra_context = {
         'edit_form': EntryExitRecordForm(),
         'form': EntryExitRecordForm(),
     }
 
+    # define which query‐params map to real model fields
+    allowed_sort_fields = {
+        'timestamp': 'timestamp',
+        'record_type': 'record_type',
+        'user': 'user__username',
+    }
+
     def get_queryset(self):
-        queryset = super().get_queryset()
-        if (
-                self.request.user.is_superuser or
-                self.request.user.is_staff
-        ):
-            return queryset
-        return queryset.filter(user=self.request.user.pk)
+        qs = super().get_queryset()
+
+        # non‐superusers only see their own
+        if not (self.request.user.is_superuser or self.request.user.is_staff):
+            qs = qs.filter(user=self.request.user)
+
+        # grab & validate sort params
+        sort = self.request.GET.get('sort')
+        direction = self.request.GET.get('direction')
+        if sort not in self.allowed_sort_fields:
+            sort = 'timestamp'
+        if direction not in ('asc', 'desc'):
+            direction = 'desc'
+
+        order_field = self.allowed_sort_fields[sort]
+        if direction == 'desc':
+            order_field = '-' + order_field
+
+        return qs.order_by(order_field)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        # echo back to the template so headers can highlight/toggle
+        ctx['current_sort'] = self.request.GET.get('sort', 'timestamp')
+        ctx['current_direction'] = self.request.GET.get('direction', 'desc')
+        return ctx
 
 
 class AddRecordView(PermissionRequiredMixin, CreateView):
