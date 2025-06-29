@@ -44,13 +44,15 @@
                         <!-- Edit Button -->
                         <button class="btn btn-sm btn-outline-secondary"
                                 data-bs-toggle="modal"
-                                data-bs-target="#editRecordModal{{ record.id }}">
+                                data-bs-target="#editRecordModal{{ record.id }}"
+                                {% if record.user != request.user %}disabled{% endif %}>
                             Edit
                         </button>
                         <!-- Delete Button -->
                         <button class="btn btn-sm btn-outline-danger"
                                 data-bs-toggle="modal"
-                                data-bs-target="#deleteRecordModal{{ record.id }}">
+                                data-bs-target="#deleteRecordModal{{ record.id }}"
+                                {% if record.user != request.user %}disabled{% endif %}>
                             Delete
                         </button>
                     </td>
