@@ -130,13 +130,16 @@ class ExportRecordCSVView(PermissionRequiredMixin, View):
             yield '\ufeff'
 
             # header row
-            yield writer.writerow(['Timestamp', 'Record Type'])
+            yield writer.writerow(['User', 'Record Type', 'Timestamp'])
 
             for rec in queryset:
                 # convert to local time zone, drop seconds, include offset
-                local_ts = timezone.localtime(rec.timestamp)
-                ts_str = local_ts.isoformat(sep=' ', timespec='minutes')
-                yield writer.writerow([ts_str, rec.get_record_type_display()])
+                local_ts = timezone.localtime(rec.timestamp).astimezone(rec.user.profile.timezone)
+                yield writer.writerow([
+                    rec.user.get_full_name() or rec.user.username,
+                    rec.get_record_type_display(),
+                    local_ts.strftime("Y-m-d H:i T"),
+                ])
 
         # 4) build the streaming response
         response = StreamingHttpResponse(
