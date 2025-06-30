@@ -24,3 +24,6 @@ class EntryExitRecord(models.Model):
         verbose_name_plural = 'Entry Exit Records'
         verbose_name = 'Entry Exit Record'
         ordering = ['-timestamp']
+        permissions = [
+            ('export_entryexitrecord', 'Can export Entry Exit Record'),
+        ]
