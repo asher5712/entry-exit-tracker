@@ -1,4 +1,5 @@
 import csv
+from zoneinfo import ZoneInfo
 
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.http import HttpResponseRedirect
@@ -113,18 +114,18 @@ class ExportRecordCSVView(PermissionRequiredMixin, View):
     permission_denied_message = "Permission Denied"
 
     def get(self, request, *args, **kwargs):
-        # 1) pseudo-buffer for csv.writer
+        # 1) Pseudo-buffer & writer
         pseudo_buffer = Echo()
         writer = csv.writer(pseudo_buffer)
 
-        # 2) base queryset (won’t load all at once)
+        # 2) Only this user's records, streamed in chunks
         queryset = EntryExitRecord.objects.filter(
-            user=request.user
+            user=self.request.user.pk
         ).order_by('-timestamp').iterator(
             chunk_size=2000
         )
 
-        # 3) generator yielding rows
+        # 3) Generator that emits the BOM, header, then each row
         def row_generator():
             # BOM for Excel’s UTF-8 detection
             yield '\ufeff'
@@ -133,18 +134,31 @@ class ExportRecordCSVView(PermissionRequiredMixin, View):
             yield writer.writerow(['User', 'Record Type', 'Timestamp'])
 
             for rec in queryset:
-                # convert to local time zone, drop seconds, include offset
-                local_ts = timezone.localtime(rec.timestamp).astimezone(rec.user.profile.timezone)
+                # pick up the user's timezone (if you store it on profile)
+                tz_name = getattr(getattr(rec.user, 'profile', None), 'timezone', None)
+                if tz_name:
+                    try:
+                        user_tz = ZoneInfo(tz_name)
+                        local_ts = rec.timestamp.astimezone(user_tz)
+                    except Exception:
+                        local_ts = timezone.localtime(rec.timestamp)
+                else:
+                    local_ts = timezone.localtime(rec.timestamp)
+
+                # proper strftime with percent-escapes
+                ts_str = local_ts.strftime('%Y-%m-%d %H:%M %Z')
+
                 yield writer.writerow([
                     rec.user.get_full_name() or rec.user.username,
                     rec.get_record_type_display(),
-                    local_ts.strftime("Y-m-d H:i T"),
+                    ts_str,
                 ])
 
-        # 4) build the streaming response
+        # 4) Stream the response
         response = StreamingHttpResponse(
             row_generator(),
             content_type='text/csv; charset=utf-8'
         )
-        response['Content-Disposition'] = f'attachment; filename="entry_exit_records_{(timezone.now().timestamp() * 100000)}.csv"'
+        filename = f'entry_exit_records_{int(timezone.now().timestamp() * 1000)}.csv'
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
         return response
