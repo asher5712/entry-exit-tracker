@@ -17,6 +17,9 @@ class Profile(models.Model):
         default=""  # we'll fill it in on first request
     )
 
+    def __str__(self):
+        return f"{self.user.username} has timezone {self.timezone}"
+
     class Meta:
         verbose_name_plural = 'User Profiles'
         verbose_name = 'User Profile'
