@@ -11,7 +11,6 @@
         }
 
         .table thead th a:hover {
-            /* if you still want a hover cue: */
             text-decoration: underline;
         }
     </style>
@@ -20,235 +19,244 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>My Entry/Exit Records</h2>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRecordModal">
-            Add New Record
-        </button>
-    </div>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>My Entry/Exit Records</h2>
+            <div>
+                <a href="{% url 'export_record_csv' %}"
+                   class="btn btn-outline-success me-2">
+                    Export CSV
+                </a>
+                <button type="button" class="btn btn-primary"
+                        data-bs-toggle="modal" data-bs-target="#addRecordModal">
+                    Add New Record
+                </button>
+            </div>
+        </div>
 
-    <table class="table table-striped table-hover align-middle">
-        <thead class="table-dark">
-        <tr>
-            {% if request.user.is_superuser %}
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
+            <tr>
+                {% if request.user.is_superuser %}
+                    <th>
+                        <a href="?sort=user&direction={% if current_sort == 'user' and current_direction == 'asc' %}desc{% else %}asc{% endif %}">
+                            User
+                            {% if current_sort == 'user' %}
+                                {% if current_direction == 'asc' %}▲{% else %}▼{% endif %}
+                            {% endif %}
+                        </a>
+                    </th>
+                {% endif %}
                 <th>
-                    <a href="?sort=user&direction={% if current_sort == 'user' and current_direction == 'asc' %}desc{% else %}asc{% endif %}">
-                        User
-                        {% if current_sort == 'user' %}
+                    <a href="?sort=record_type&direction={% if current_sort == 'record_type' and current_direction == 'asc' %}desc{% else %}asc{% endif %}">
+                        Type
+                        {% if current_sort == 'record_type' %}
                             {% if current_direction == 'asc' %}▲{% else %}▼{% endif %}
                         {% endif %}
                     </a>
                 </th>
-            {% endif %}
-            <th>
-                <a href="?sort=record_type&direction={% if current_sort == 'record_type' and current_direction == 'asc' %}desc{% else %}asc{% endif %}">
-                    Type
-                    {% if current_sort == 'record_type' %}
-                        {% if current_direction == 'asc' %}▲{% else %}▼{% endif %}
-                    {% endif %}
-                </a>
-            </th>
-            <th>
-                <a href="?sort=timestamp&direction={% if current_sort == 'timestamp' and current_direction == 'asc' %}desc{% else %}asc{% endif %}">
-                    Timestamp
-                    {% if current_sort == 'timestamp' %}
-                        {% if current_direction == 'asc' %}▲{% else %}▼{% endif %}
-                    {% endif %}
-                </a>
-            </th>
-            <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for record in records %}
-            <tr>
-                {% if request.user.is_superuser %}
-                    <td>{{ record.user.get_full_name|default:record.user.username }}</td>
-                {% endif %}
-                <td>
-                    {% if record.record_type == "IN" %}
-                        <span class="badge bg-success">Entry</span>
-                    {% else %}
-                        <span class="badge bg-danger">Exit</span>
-                    {% endif %}
-                </td>
-                <td>
-                    {{ record.timestamp|localtime|date:"Y-m-d" }}
-                    {{ record.timestamp|localtime|time:"H:i T" }}
-                </td>
-                <td>
-                    <!-- Edit Button -->
-                    <button class="btn btn-sm btn-outline-secondary"
-                            data-bs-toggle="modal"
-                            data-bs-target="#editRecordModal{{ record.id }}"
-                            {% if record.user != request.user %}disabled{% endif %}>
-                        Edit
-                    </button>
-                    <!-- Delete Button -->
-                    <button class="btn btn-sm btn-outline-danger"
-                            data-bs-toggle="modal"
-                            data-bs-target="#deleteRecordModal{{ record.id }}"
-                            {% if record.user != request.user %}disabled{% endif %}>
-                        Delete
-                    </button>
-                </td>
+                <th>
+                    <a href="?sort=timestamp&direction={% if current_sort == 'timestamp' and current_direction == 'asc' %}desc{% else %}asc{% endif %}">
+                        Timestamp
+                        {% if current_sort == 'timestamp' %}
+                            {% if current_direction == 'asc' %}▲{% else %}▼{% endif %}
+                        {% endif %}
+                    </a>
+                </th>
+                <th>Actions</th>
             </tr>
+            </thead>
+            <tbody>
+            {% for record in records %}
+                <tr>
+                    {% if request.user.is_superuser %}
+                        <td>{{ record.user.get_full_name|default:record.user.username }}</td>
+                    {% endif %}
+                    <td>
+                        {% if record.record_type == "IN" %}
+                            <span class="badge bg-success">Entry</span>
+                        {% else %}
+                            <span class="badge bg-danger">Exit</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ record.timestamp|localtime|date:"Y-m-d" }}
+                        {{ record.timestamp|localtime|time:"H:i T" }}
+                    </td>
+                    <td>
+                        <!-- Edit Button -->
+                        <button class="btn btn-sm btn-outline-secondary"
+                                data-bs-toggle="modal"
+                                data-bs-target="#editRecordModal{{ record.id }}"
+                                {% if record.user != request.user %}disabled{% endif %}>
+                            Edit
+                        </button>
+                        <!-- Delete Button -->
+                        <button class="btn btn-sm btn-outline-danger"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteRecordModal{{ record.id }}"
+                                {% if record.user != request.user %}disabled{% endif %}>
+                            Delete
+                        </button>
+                    </td>
+                </tr>
 
-            <!-- Edit Modal -->
-            <div class="modal fade" id="editRecordModal{{ record.id }}" tabindex="-1"
-                 aria-labelledby="editRecordLabel{{ record.id }}" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <form method="post" action="{% url 'edit_record' record.id %}">
-                            {% csrf_token %}
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="editRecordLabel{{ record.id }}">Edit Record</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                        aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                {% with form=edit_form %}
-                                    {% for field in form %}
-                                        {% if field.name == 'record_type' %}
-                                            <div class="mb-3">
-                                                <label for="{{ field.id_for_label }}"
-                                                       class="form-label">{{ field.label }}</label>
-                                                <select name="record_type" id="{{ field.id_for_label }}"
-                                                        class="form-select">
-                                                    <option value="IN"
-                                                            {% if record.record_type == 'IN' %}selected{% endif %}>
-                                                        Entry
-                                                    </option>
-                                                    <option value="OUT"
-                                                            {% if record.record_type == 'OUT' %}selected{% endif %}>
-                                                        Exit
-                                                    </option>
-                                                </select>
-                                            </div>
-                                        {% endif %}
-                                    {% endfor %}
-                                {% endwith %}
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel
-                                </button>
-                                <button type="submit" class="btn btn-primary">Save Changes</button>
-                            </div>
-                        </form>
+                <!-- Edit Modal -->
+                <div class="modal fade" id="editRecordModal{{ record.id }}" tabindex="-1"
+                     aria-labelledby="editRecordLabel{{ record.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form method="post" action="{% url 'edit_record' record.id %}">
+                                {% csrf_token %}
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="editRecordLabel{{ record.id }}">Edit Record</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    {% with form=edit_form %}
+                                        {% for field in form %}
+                                            {% if field.name == 'record_type' %}
+                                                <div class="mb-3">
+                                                    <label for="{{ field.id_for_label }}"
+                                                           class="form-label">{{ field.label }}</label>
+                                                    <select name="record_type" id="{{ field.id_for_label }}"
+                                                            class="form-select">
+                                                        <option value="IN"
+                                                                {% if record.record_type == 'IN' %}selected{% endif %}>
+                                                            Entry
+                                                        </option>
+                                                        <option value="OUT"
+                                                                {% if record.record_type == 'OUT' %}selected{% endif %}>
+                                                            Exit
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endwith %}
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel
+                                    </button>
+                                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Delete Modal -->
-            <div class="modal fade" id="deleteRecordModal{{ record.id }}" tabindex="-1"
-                 aria-labelledby="deleteRecordLabel{{ record.id }}" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <form method="post" action="{% url 'delete_record' record.id %}">
-                            {% csrf_token %}
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="deleteRecordLabel{{ record.id }}">Delete Record</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                        aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <p>Are you sure you want to delete this record
-                                    ({{ record.get_record_type_display }}) at
-                                    {{ record.timestamp|localtime|date:"Y-m-d H:i" }}?</p>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel
-                                </button>
-                                <button type="submit" class="btn btn-danger">Delete</button>
-                            </div>
-                        </form>
+                <!-- Delete Modal -->
+                <div class="modal fade" id="deleteRecordModal{{ record.id }}" tabindex="-1"
+                     aria-labelledby="deleteRecordLabel{{ record.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form method="post" action="{% url 'delete_record' record.id %}">
+                                {% csrf_token %}
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="deleteRecordLabel{{ record.id }}">Delete Record</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Are you sure you want to delete this record
+                                        ({{ record.get_record_type_display }}) at
+                                        {{ record.timestamp|localtime|date:"Y-m-d H:i T" }}?</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel
+                                    </button>
+                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-        {% empty %}
-            <tr>
-                <td colspan="{% if request.user.is_superuser %}4{% else %}3{% endif %}"
-                    class="text-center text-muted">
-                    No records found.
-                </td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+            {% empty %}
+                <tr>
+                    <td colspan="{% if request.user.is_superuser %}4{% else %}3{% endif %}"
+                        class="text-center text-muted">
+                        No records found.
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
 
-    {% if is_paginated %}
-        <nav aria-label="Page navigation">
-            <ul class="pagination justify-content-center">
+        {% if is_paginated %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
 
-                {# Previous #}
-                {% if page_obj.has_previous %}
-                    <li class="page-item">
-                        <a
-                                class="page-link"
-                                href="?page={{ page_obj.previous_page_number }}{% if current_sort %}&sort={{ current_sort }}{% endif %}{% if current_direction %}&direction={{ current_direction }}{% endif %}"
-                        >
-                            Previous
-                        </a>
-                    </li>
-                {% else %}
-                    <li class="page-item disabled"><span class="page-link">Previous</span></li>
-                {% endif %}
-
-                {# Page numbers #}
-                {% for num in paginator.page_range %}
-                    {% if num == page_obj.number %}
-                        <li class="page-item active" aria-current="page">
-                            <span class="page-link">{{ num }}</span>
-                        </li>
-                    {% elif num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+                    {# Previous #}
+                    {% if page_obj.has_previous %}
                         <li class="page-item">
                             <a
                                     class="page-link"
-                                    href="?page={{ num }}{% if current_sort %}&sort={{ current_sort }}{% endif %}{% if current_direction %}&direction={{ current_direction }}{% endif %}"
+                                    href="?page={{ page_obj.previous_page_number }}{% if current_sort %}&sort={{ current_sort }}{% endif %}{% if current_direction %}&direction={{ current_direction }}{% endif %}"
                             >
-                                {{ num }}
+                                Previous
                             </a>
                         </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">Previous</span></li>
                     {% endif %}
-                {% endfor %}
 
-                {# Next #}
-                {% if page_obj.has_next %}
-                    <li class="page-item">
-                        <a
-                                class="page-link"
-                                href="?page={{ page_obj.next_page_number }}{% if current_sort %}&sort={{ current_sort }}{% endif %}{% if current_direction %}&direction={{ current_direction }}{% endif %}"
-                        >
-                            Next
-                        </a>
-                    </li>
-                {% else %}
-                    <li class="page-item disabled"><span class="page-link">Next</span></li>
-                {% endif %}
+                    {# Page numbers #}
+                    {% for num in paginator.page_range %}
+                        {% if num == page_obj.number %}
+                            <li class="page-item active" aria-current="page">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+                            <li class="page-item">
+                                <a
+                                        class="page-link"
+                                        href="?page={{ num }}{% if current_sort %}&sort={{ current_sort }}{% endif %}{% if current_direction %}&direction={{ current_direction }}{% endif %}"
+                                >
+                                    {{ num }}
+                                </a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
 
-            </ul>
-        </nav>
-    {% endif %}
+                    {# Next #}
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a
+                                    class="page-link"
+                                    href="?page={{ page_obj.next_page_number }}{% if current_sort %}&sort={{ current_sort }}{% endif %}{% if current_direction %}&direction={{ current_direction }}{% endif %}"
+                            >
+                                Next
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">Next</span></li>
+                    {% endif %}
 
-    <!-- Add Modal -->
-    <div class="modal fade" id="addRecordModal" tabindex="-1" aria-labelledby="addRecordModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <form method="post" action="{% url 'add_record' %}">
-                    {% csrf_token %}
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="addRecordModalLabel">Add Entry/Exit Record</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        {{ form.as_p }}
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Add Record</button>
-                    </div>
-                </form>
+                </ul>
+            </nav>
+        {% endif %}
+
+        <!-- Add Modal -->
+        <div class="modal fade" id="addRecordModal" tabindex="-1" aria-labelledby="addRecordModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form method="post" action="{% url 'add_record' %}">
+                        {% csrf_token %}
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="addRecordModalLabel">Add Entry/Exit Record</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            {{ form.as_p }}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Add Record</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
