@@ -1,6 +1,10 @@
+import csv
+
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.http import HttpResponseRedirect
+from django.http import StreamingHttpResponse
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.views import View
 from django.views.generic import CreateView
 from django.views.generic import DeleteView
@@ -8,6 +12,7 @@ from django.views.generic import ListView
 from django.views.generic import UpdateView
 
 from entryexit.forms import EntryExitRecordForm
+from entryexit.helpers import Echo
 from entryexit.mixins import OwnerUserMixin
 from entryexit.models import EntryExitRecord
 
@@ -96,3 +101,47 @@ class DeleteRecordView(PermissionRequiredMixin, OwnerUserMixin, DeleteView):
     template_name = 'entryexit/delete_record.html'
     success_url = reverse_lazy('record_list')
     model = EntryExitRecord
+
+
+class ExportRecordCSVView(PermissionRequiredMixin, View):
+    """
+    Streams the current user's EntryExitRecord queryset as a CSV file,
+    formatting timestamps with full date, hours + minutes, and timezone offset.
+    """
+
+    permission_required = 'entryexit.export_entryexitrecord'
+    permission_denied_message = "Permission Denied"
+
+    def get(self, request, *args, **kwargs):
+        # 1) pseudo-buffer for csv.writer
+        pseudo_buffer = Echo()
+        writer = csv.writer(pseudo_buffer)
+
+        # 2) base queryset (won’t load all at once)
+        queryset = EntryExitRecord.objects.filter(
+            user=request.user
+        ).order_by('-timestamp').iterator(
+            chunk_size=2000
+        )
+
+        # 3) generator yielding rows
+        def row_generator():
+            # BOM for Excel’s UTF-8 detection
+            yield '\ufeff'
+
+            # header row
+            yield writer.writerow(['Timestamp', 'Record Type'])
+
+            for rec in queryset:
+                # convert to local time zone, drop seconds, include offset
+                local_ts = timezone.localtime(rec.timestamp)
+                ts_str = local_ts.isoformat(sep=' ', timespec='minutes')
+                yield writer.writerow([ts_str, rec.get_record_type_display()])
+
+        # 4) build the streaming response
+        response = StreamingHttpResponse(
+            row_generator(),
+            content_type='text/csv; charset=utf-8'
+        )
+        response['Content-Disposition'] = f'attachment; filename="entry_exit_records_{(timezone.now().timestamp() * 100000)}.csv"'
+        return response
