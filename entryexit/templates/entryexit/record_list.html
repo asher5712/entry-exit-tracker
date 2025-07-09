@@ -183,7 +183,29 @@
                                     aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            {{ form.as_p }}
+                            {% with form=form %}
+                                {% for field in form %}
+                                    {% if field.name == 'record_type' %}
+                                        <div class="mb-3">
+                                            <label for="{{ field.id_for_label }}" class="form-label">
+                                                {{ field.label }}
+                                            </label>
+                                            <select name="record_type" id="{{ field.id_for_label }}"
+                                                    class="form-select">
+                                                <option selected>
+                                                    --------
+                                                </option>
+                                                <option value="IN">
+                                                    Entry
+                                                </option>
+                                                <option value="OUT">
+                                                    Exit
+                                                </option>
+                                            </select>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endwith %}
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary"
