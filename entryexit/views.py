@@ -193,7 +193,7 @@ class ExportRecordCSVView(PermissionRequiredMixin, View):
         start = request.GET.get('start_date')
         end = request.GET.get('end_date')
         if start and end:
-            fn_date = f"{start}_{end}"
+            fn_date = f"{start.replace('-', '')}{end.replace('-', '')}"
         else:
             fn_date = "all"
         filename = f"{user_label}_entry_exit_records_{fn_date}.csv"
