@@ -12,6 +12,7 @@ from django.http import HttpResponseRedirect
 from django.http import StreamingHttpResponse
 from django.urls import reverse_lazy
 from django.utils import timezone
+from django.utils.timezone import localdate
 from django.views import View
 from django.views.generic import CreateView
 from django.views.generic import DeleteView
@@ -193,10 +194,10 @@ class ExportRecordCSVView(PermissionRequiredMixin, View):
         start = request.GET.get('start_date')
         end = request.GET.get('end_date')
         if start and end:
-            fn_date = f"{start.replace('-', '')}{end.replace('-', '')}"
+            fn_date = f"F{start.replace('-', '')}T{end.replace('-', '')}"
         else:
-            fn_date = "all"
-        filename = f"{user_label}_entry_exit_records_{fn_date}.csv"
+            fn_date = f"ALL{localdate().strftime('%Y%m%d')}"
+        filename = f"{user_label.upper()}_ENTRY_EXIT_RECORDS_{fn_date}.csv"
 
         # 1) Base & filtered queryset
         qs = self.get_queryset()
